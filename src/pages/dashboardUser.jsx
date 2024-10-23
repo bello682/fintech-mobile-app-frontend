@@ -1,22 +1,56 @@
+import React, { useEffect } from "react";
 import {
 	StyleSheet,
 	Text,
 	View,
 	ScrollView,
-	// TouchableOpacity,
+	ActivityIndicator,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import React from "react";
-import ButtomTab from "../component/bottomTab";
+import { getGreeting } from "../component/getGreetings";
+import { fetchUserById } from "../store/action/fetchUserByIdAction";
 
 const DashboardUser = () => {
+	const dispatch = useDispatch();
+	const { profile, loading, error } = useSelector(
+		(state) => state.userProfileFetch
+	);
+	const { user } = useSelector((state) => state.loginState);
+
+	const userID = user?.user?.id;
+
+	// Extract just the first name from the full name
+	const firstName = profile?.data?.fullName?.split(" ")[0];
+
+	useEffect(() => {
+		if (userID) {
+			// Fetch user profile by userID
+			dispatch(fetchUserById(userID));
+		} else {
+			console.log("Invalid or undefined userID: ", userID);
+		}
+	}, [dispatch, userID]);
+
+	if (loading) {
+		return <ActivityIndicator size="large" color="purple" />;
+	}
+
+	if (error) {
+		return <Text>Error: {error}</Text>;
+	}
+
 	return (
 		<>
 			<ScrollView style={styles.container}>
 				{/* Header */}
 				<View style={styles.header}>
-					<Text style={styles.headerText}>Welcome, User</Text>
-					<Text style={styles.subHeaderText}>Your Banking Dashboard</Text>
+					<View>
+						<Text style={styles.headerText}>
+							{getGreeting()} {firstName}
+						</Text>
+						<Text style={styles.subHeaderText}>Your Banking Dashboard</Text>
+					</View>
 				</View>
 
 				{/* Balance Section */}
@@ -60,8 +94,6 @@ const DashboardUser = () => {
 			</ScrollView>
 
 			{/* Tabs */}
-
-			<ButtomTab />
 		</>
 	);
 };
@@ -75,9 +107,14 @@ const styles = StyleSheet.create({
 		backgroundColor: "#f0f4f8",
 	},
 	header: {
-		marginBottom: 20,
-		alignItems: "center",
+		marginBottom: 20, // Space below the header
+		alignItems: "center", // Center items horizontally
+		justifyContent: "center", // Center items vertically
+		paddingHorizontal: 20, // Padding on the left and right sides
+		flexDirection: "column", // Stack children vertically
+		marginHorizontal: "auto", // Center the header horizontally
 	},
+
 	headerText: {
 		fontSize: 28,
 		fontWeight: "bold",
@@ -160,6 +197,20 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: "bold",
 		color: "#333",
+	},
+
+	WelcomeScreen__logo_wrapper: {
+		position: "absolute",
+		top: 20,
+		right: 20,
+		aspectRatio: 1 / 1, // Maintains a square aspect ratio
+		width: "18%",
+	},
+
+	WelcomeScreen__logo: {
+		flex: 1,
+		width: "100%",
+		aspectRatio: 1 / 1,
 	},
 });
 

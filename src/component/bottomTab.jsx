@@ -1,14 +1,15 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import User1 from "./../pages/usersPgaes/user1";
 import Users2 from "./../pages/usersPgaes/users2";
 import UsersPages2 from "./../pages/usersPgaes/usersPages2";
 import SettingsScreen from "../pages/usersPgaes/SettingsScreen";
 import MoreScreen from "../pages/usersPgaes/MoreScreen";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import DashboardUser from "../pages/dashboardUser";
 
+// Create bottom tab navigator
 const Tab = createBottomTabNavigator();
 
 const BottomTab = () => {
@@ -16,9 +17,9 @@ const BottomTab = () => {
 		<Tab.Navigator
 			screenOptions={({ route }) => ({
 				tabBarIcon: ({ focused, color, size }) => {
+					// Set the icon based on the tab
 					let iconName;
-
-					if (route.name === "Users1") {
+					if (route.name === "Dashboard") {
 						iconName = focused ? "home" : "home-outline";
 					} else if (route.name === "Users2") {
 						iconName = focused ? "person" : "person-outline";
@@ -35,12 +36,12 @@ const BottomTab = () => {
 
 					return <Ionicons name={iconName} size={size} color={color} />;
 				},
-				tabBarActiveTintColor: "tomato",
-				tabBarInactiveTintColor: "gray",
-				tabBarStyle: { height: 60 },
+				tabBarActiveTintColor: "tomato", // Active color for focused tab
+				tabBarInactiveTintColor: "gray", // Inactive color for unfocused tabs
+				tabBarStyle: { height: 60 }, // Custom tab height
 			})}
 		>
-			<Tab.Screen name="Users1" component={User1} />
+			<Tab.Screen name="Dashboard" component={DashboardUser} />
 			<Tab.Screen name="Users2" component={Users2} />
 			<Tab.Screen
 				name="AddUser"
@@ -62,12 +63,8 @@ const BottomTab = () => {
 
 export default BottomTab;
 
+// Styling for custom components
 const styles = StyleSheet.create({
-	screen: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-	},
 	middleTab: {
 		height: 60,
 		width: 60,

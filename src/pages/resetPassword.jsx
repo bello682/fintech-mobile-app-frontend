@@ -1,6 +1,6 @@
 // refes
 import React from "react";
-import { Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import { useNavigation } from "@react-navigation/native";
 import {
 	Image,
@@ -9,102 +9,84 @@ import {
 	View,
 	Dimensions,
 	TextInput,
-	ActivityIndicator,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { ForgetPasswordValidationSchema } from "../component/ErrorValidation";
-import { forgetUserPassword } from "../store/action/forgetPasswordAction";
-import { useSelector, useDispatch } from "react-redux";
 
 const initialValues = {
 	email: "",
 };
 const ForgetPassword = () => {
 	const navigation = useNavigation();
-	const dispatch = useDispatch();
-	const { loading_now } = useSelector((state) => state.forgetPasswordReducer);
+
+	//   const handleBack = () => {
+	//     navigation.navigate('SignUp');
+	//   };
+	const { handleBlur, handleChange, handleSubmit, values, errors, resetForm } =
+		useFormik({
+			initialValues: initialValues,
+			validationSchema: ForgetPasswordValidationSchema,
+			onSubmit: (value, { resetForm }) => {
+				console.log(value);
+
+				resetForm();
+			},
+		});
 
 	return (
-		<>
-			<Formik
-				initialValues={initialValues}
-				validationSchema={ForgetPasswordValidationSchema}
-				onSubmit={async (values) => {
-					await dispatch(forgetUserPassword(values.email));
-
-					navigation.navigate("Login");
-				}}
-			>
-				{({
-					values,
-					handleChange,
-					handleBlur,
-					handleSubmit,
-					errors,
-					touched,
-				}) => (
-					<View style={styles.login__wrapper}>
-						<View style={{ width: "100%" }}>
-							<View style={styles.login__logo_wrapper}>
-								<Image
-									source={require("../asset/newlogo.png")}
-									style={styles.logo__login}
-								/>
-							</View>
-						</View>
-						<View style={styles.login_body_info_wrapper}>
-							<Text
-								style={{
-									textAlign: "center",
-									fontSize: 20,
-									fontWeight: 500,
-									marginBottom: 20,
-								}}
-							>
-								{/* Step */}
-								<Text style={{ color: "purple", fontSize: 21 }}>
-									{" "}
-									Forget Password
-								</Text>
-							</Text>
-							<View>
-								<View>
-									<TextInput
-										style={[
-											styles.Email_input,
-											errors?.email ? styles.error__border : null,
-										]}
-										placeholder="Enter Email"
-										onChangeText={handleChange("email")}
-										onBlur={handleBlur("email")}
-										value={values.email}
-									/>
-								</View>
-								{errors.email && (
-									<Text style={styles.Error__Message}>{errors.email}</Text>
-								)}
-							</View>
-
-							<View>
-								<TouchableOpacity
-									style={styles.login__btn}
-									onPress={handleSubmit}
-									disabled={errors.email}
-								>
-									<Text style={styles.login__text_btn}>
-										{loading_now ? (
-											<ActivityIndicator size="large" color="#fff" />
-										) : (
-											"Get Code"
-										)}
-									</Text>
-								</TouchableOpacity>
-							</View>
-						</View>
+		<View style={styles.login__wrapper}>
+			<View style={{ width: "100%" }}>
+				<View style={styles.login__logo_wrapper}>
+					<Image
+						source={require("../asset/newlogo.png")}
+						style={styles.logo__login}
+					/>
+				</View>
+			</View>
+			<View style={styles.login_body_info_wrapper}>
+				<Text
+					style={{
+						textAlign: "center",
+						fontSize: 20,
+						fontWeight: 500,
+						marginBottom: 20,
+					}}
+				>
+					{/* Step */}
+					<Text style={{ color: "purple", fontSize: 21 }}> Reset Password</Text>
+				</Text>
+				<View>
+					<View>
+						<TextInput
+							style={[
+								styles.Email_input,
+								errors?.email ? styles.error__border : null,
+							]}
+							placeholder="Enter new password..."
+							onChangeText={handleChange("email")}
+							onBlur={handleBlur("email")}
+							value={values.email}
+						/>
 					</View>
-				)}
-			</Formik>
-		</>
+					{errors.email && (
+						<Text style={styles.Error__Message}>{errors.email}</Text>
+					)}
+				</View>
+
+				<View>
+					<TouchableOpacity
+						style={styles.login__btn}
+						onPress={() => {
+							console.log("verify page");
+							handleSubmit();
+						}}
+						disabled={errors.email}
+					>
+						<Text style={styles.login__text_btn}>Create new password</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+		</View>
 	);
 };
 
