@@ -108,7 +108,7 @@ const Login = () => {
 											styles.Email_input,
 											errors?.email ? styles.error__border : null,
 										]}
-										placeholder="Enter your email addres"
+										placeholder="Enter your email address"
 										onChangeText={handleChange("email")}
 										onBlur={handleBlur("email")}
 										value={values.email}
@@ -191,16 +191,22 @@ const Login = () => {
 									</TouchableOpacity>
 								</View>
 							)}
-							<View style={{ marginTop: 60 }}>
+							<View
+								style={{
+									marginTop: 60,
+									flexDirection: "row",
+									justifyContent: "center",
+								}}
+							>
 								<Text style={styles.text__link_signup}>
-									Dont have an account yet?{" "}
-									<Link to={"/SignUp"} style={styles.link_sign_navigate}>
-										Sign-up
-									</Link>
+									Don't have an account yet?{" "}
 								</Text>
+								<TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+									<Text style={styles.link_sign_navigate}>Sign-up</Text>
+								</TouchableOpacity>
 							</View>
 
-							<TouchableOpacity
+							{/* <TouchableOpacity
 								style={styles.login__btn}
 								onPress={() => {
 									navigation.navigate("Kyc_User");
@@ -209,7 +215,7 @@ const Login = () => {
 								<View style={styles.google__btn_wrapper}>
 									<Text style={styles.login__text_btn}>Sign In to KYC</Text>
 								</View>
-							</TouchableOpacity>
+							</TouchableOpacity> */}
 						</View>
 					</View>
 				)}

@@ -21,10 +21,16 @@
 				"foregroundImage": "./assets/adaptive-icon.png",
 				"backgroundColor": "#ffffff"
 			},
-			"enableHermes": true
+			"enableHermes": true,
+			"package": "com.olamijidev.fintechmobileappfrontend"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png"
+		},
+		"extra": {
+			"eas": {
+				"projectId": "011a5bbe-43d3-4fd3-aada-686bce78c8a7"
+			}
 		}
 	}
 }

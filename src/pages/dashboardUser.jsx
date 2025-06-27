@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
 	StyleSheet,
 	Text,
@@ -13,6 +14,7 @@ import { fetchUserById } from "../store/action/fetchUserByIdAction";
 
 const DashboardUser = () => {
 	const dispatch = useDispatch();
+	const navigation = useNavigation();
 	const { profile, loading, error } = useSelector(
 		(state) => state.userProfileFetch
 	);
@@ -94,6 +96,18 @@ const DashboardUser = () => {
 			</ScrollView>
 
 			{/* Tabs */}
+			<View>
+				<TouchableOpacity
+					style={styles.login__btn}
+					onPress={() => {
+						navigation.navigate("Kyc_User");
+					}}
+				>
+					<View style={styles.google__btn_wrapper}>
+						<Text style={styles.login__text_btn}>Sign In to KYC</Text>
+					</View>
+				</TouchableOpacity>
+			</View>
 		</>
 	);
 };

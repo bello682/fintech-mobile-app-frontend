@@ -241,9 +241,11 @@ const SignUp = () => {
 							<View style={{ marginTop: 40 }}>
 								<Text style={styles.text__link_signup}>
 									Already have an accout?{" "}
-									<Link to={"/Login"} style={styles.link_sign_navigate}>
-										Login
-									</Link>
+									<TouchableOpacity
+										onPress={() => navigation.navigate("Login")}
+									>
+										<Text style={styles.link_sign_navigate}>Login</Text>
+									</TouchableOpacity>
 								</Text>
 							</View>
 						</View>
