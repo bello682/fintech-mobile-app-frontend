@@ -41,7 +41,11 @@ const BottomTab = () => {
 				tabBarStyle: { height: 60 }, // Custom tab height
 			})}
 		>
-			<Tab.Screen name="Dashboard" component={DashboardUser} />
+			<Tab.Screen
+				name="Dashboard"
+				component={DashboardUser}
+				options={{ headerShown: false }}
+			/>
 			<Tab.Screen name="Users2" component={Users2} />
 			<Tab.Screen
 				name="AddUser"

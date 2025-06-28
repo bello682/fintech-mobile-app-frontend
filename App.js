@@ -12,6 +12,7 @@ import { Provider } from "react-redux";
 import store from "./src/store/store";
 import Toast from "react-native-toast-message";
 import Kyc_User from "./src/pages/KYC/userKyc";
+import SplashScreen from "./src/pages/splashScreen";
 
 const Stack = createStackNavigator();
 
@@ -27,43 +28,49 @@ const App = () => {
 		<SafeAreaView style={styles.safeArea}>
 			<Provider store={store}>
 				<NavigationContainer>
-					<Stack.Navigator initialRouteName="Welcome">
-						<Stack.Screen
-							name="Welcome"
-							component={WelcomeScreen}
-							options={{ headerShown: false }}
-						/>
-						<Stack.Screen
-							name="SignUp"
-							component={SignUp}
-							options={{ headerShown: false }}
-						/>
-						<Stack.Screen
-							name="Login"
-							component={Login}
-							options={{ headerShown: false }}
-						/>
-						<Stack.Screen
-							name="Kyc_User"
-							component={Kyc_User}
-							options={{ headerShown: true }}
-						/>
-						<Stack.Screen
-							name="Verification"
-							component={SignUp2_EmailVerification}
-							options={{ headerShown: true }}
-						/>
-						<Stack.Screen
-							name="Password_reset"
-							component={ForgetPassword}
-							options={{ headerShown: true }}
-						/>
-						{/* Main Tabs */}
-						<Stack.Screen
-							name="MainTabs"
-							component={BottomTab}
-							options={{ headerShown: false }}
-						/>
+					<Stack.Navigator initialRouteName="Splash">
+							<Stack.Screen
+								name="Splash"
+								component={SplashScreen}
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
+								name="Welcome"
+								component={WelcomeScreen}
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
+								name="SignUp"
+								component={SignUp}
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
+								name="Login"
+								component={Login}
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
+								name="Kyc_User"
+								component={Kyc_User}
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
+								name="Verification"
+								component={SignUp2_EmailVerification}
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
+								name="Password_reset"
+								component={ForgetPassword}
+								options={{ headerShown: true }}
+							/>
+							{/* Main Tabs */}
+							<Stack.Screen
+								name="MainTabs"
+								component={BottomTab}
+								options={{ headerShown: false }}
+							/>
+						 
 					</Stack.Navigator>
 
 					<Toast />
@@ -76,7 +83,7 @@ const App = () => {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#fff", // Set background color or customize
+		backgroundColor: "#fff", 
 	},
 });
 
@@ -85,3 +92,7 @@ export default App;
 // adb kill-server
 // adb start-server
 // adb devices
+// npm start -- --reset-cache
+// rm -rf node_modules
+// rm package-lock.json
+// npm install

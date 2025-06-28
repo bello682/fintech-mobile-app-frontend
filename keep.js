@@ -60,3 +60,9 @@
 // 4. download the apk from the link provided in the terminal
 // 5. install the apk on your android device
 // 6. run the app on your android device
+
+// Let me know if you’d like to: yes i will like you to just add this two only
+
+// "Animate with Lottie JSON animation (more visual)
+
+// Add background music or fade effects"

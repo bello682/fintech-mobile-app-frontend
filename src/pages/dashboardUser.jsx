@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		padding: 20,
 		backgroundColor: "#f0f4f8",
+		marginTop: 50, // Space above the container
 	},
 	header: {
 		marginBottom: 20, // Space below the header
@@ -133,13 +134,14 @@ const styles = StyleSheet.create({
 		fontSize: 28,
 		fontWeight: "bold",
 		color: "#333",
+		// color: "purple",
 	},
 	subHeaderText: {
 		fontSize: 16,
-		color: "#666",
+		color: "purple",
 	},
 	balanceSection: {
-		backgroundColor: "#4CAF50",
+		backgroundColor: "purple",
 		padding: 20,
 		borderRadius: 12,
 		marginBottom: 20,
@@ -157,7 +159,9 @@ const styles = StyleSheet.create({
 	},
 	actionButton: {
 		marginTop: 20,
-		backgroundColor: "#388E3C",
+		backgroundColor: "transparent",
+		borderColor: "#fff",
+		borderWidth: 1,
 		padding: 12,
 		borderRadius: 8,
 	},
@@ -171,7 +175,7 @@ const styles = StyleSheet.create({
 		marginBottom: 20,
 	},
 	quickActionButton: {
-		backgroundColor: "#2196F3",
+		backgroundColor: "purple",
 		padding: 15,
 		borderRadius: 8,
 		width: "100%",
@@ -205,12 +209,14 @@ const styles = StyleSheet.create({
 	},
 	transactionDescription: {
 		fontSize: 16,
-		color: "#333",
+		// color: "#333",
+		color: "purple",
 	},
 	transactionAmount: {
 		fontSize: 16,
 		fontWeight: "bold",
-		color: "#333",
+		// color: "#333",
+		color: "purple",
 	},
 
 	WelcomeScreen__logo_wrapper: {

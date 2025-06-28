@@ -23,7 +23,9 @@ const GlobalPopupModal = ({
 			transparent={true}
 			visible={visible}
 			animationType="fade"
-			onRequestClose={onClose} // Handles back button press on Android
+			onRequestClose={onClose}
+			// overflow="scroll" // Prevents the modal from scrolling on iOS
+			style={{ overflow: "scroll" }} // Handles back button press on Android
 		>
 			<View style={styles.modalOverlay}>
 				<View style={styles.modalContainer}>
@@ -66,6 +68,7 @@ const styles = StyleSheet.create({
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.8,
 		shadowRadius: 2,
+		overflow: "scroll",
 	},
 	title: {
 		fontSize: 20,

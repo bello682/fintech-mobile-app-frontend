@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Formik } from "formik";
-import { Link } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 import {
 	Image,
@@ -15,12 +14,14 @@ import {
 	ScrollView,
 	KeyboardAvoidingView,
 	Platform,
+	Alert, // Using Alert for user feedback instead of console.log for "No file selected"
 } from "react-native";
 import GlobalPopupModal from "../../component/modalComponent";
 import SpinningLoader from "../../component/spinner";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { KycValidationSchema } from "../../component/ErrorValidation";
 import GlobalSelect from "../../component/selectOptionDropdown";
+import { launchImageLibrary } from "react-native-image-picker";
 
 const initialValues = {
 	documentType: "",
@@ -48,9 +49,18 @@ const Kyc_User = () => {
 		"Passport",
 	];
 
-	const handleFileChange = (event) => {
-		const file = event.target.files[0];
-		setSelectedFile(file);
+	const handleFileChange = () => {
+		launchImageLibrary({ mediaType: "photo" }, (response) => {
+			if (response.didCancel) {
+				console.log("User cancelled image picker");
+			} else if (response.errorCode) {
+				console.log("ImagePicker Error: ", response.errorMessage);
+			} else {
+				const selectedAsset = response.assets[0];
+				setSelectedFile(selectedAsset);
+				console.log("Selected image URI: ", selectedAsset.uri);
+			}
+		});
 	};
 
 	const handleUpload = () => {
@@ -68,10 +78,10 @@ const Kyc_User = () => {
 
 	if (loading) {
 		return (
-			<View style={{ flex: 1 }}>
+			<View style={styles.loadingContainer}>
 				<SpinningLoader />
 			</View>
-		); // Correctly return loading state
+		);
 	}
 
 	return (
@@ -82,10 +92,21 @@ const Kyc_User = () => {
 				onSubmit={async (values) => {
 					try {
 						// Add selectedDocumentImage to values if file selected
-						if (selectedDocumentImage) {
-							values.documentImage = selectedDocumentImage.uri; // Update with file URI
-						}
-						await dispatch(register(values));
+						// if (selectedFile) {
+						// 	values.documentImage = selectedFile.uri;
+						// }
+
+						// await dispatch(register(values));
+
+						const formData = new FormData();
+						formData.append("documentType", values.documentType);
+						formData.append("documentImage", {
+							uri: values.documentImage,
+							name: selectedFile.fileName,
+							type: selectedFile.type,
+						});
+
+						dispatch(register(formData));
 
 						navigation.navigate("Verification");
 					} catch (error) {
@@ -269,29 +290,32 @@ const Kyc_User = () => {
 									</View>
 
 									{/* Document Image Upload */}
-									<View>
-										<View>
-											{/* For React Native Web or WebView, input tag works */}
-											<input
-												type="file"
-												accept="image/*"
-												onChange={handleFileChange} // Ensure handleFileChange is defined
-												style={{ margin: 10 }}
-											/>
-											{selectedFile && (
-												<Text>Selected File: {selectedFile.name}</Text>
-											)}
+									<View style={styles.imageUploadContainer}>
+										<Text style={styles.label}>Upload ID Image</Text>
+										<TouchableOpacity
+											onPress={() => handleUpload()} // Pass setFieldValue to access Formik's state
+											style={styles.imageSelectButton}
+										>
+											<Icon name="image" size={24} color="#007bff" />
+											<Text style={styles.imageSelectButtonText}>
+												Select Image
+											</Text>
+										</TouchableOpacity>
 
-											{/* Using a button for uploading the file */}
-											<TouchableOpacity
-												style={styles.login_email_text}
-												onPress={handleUpload}
-											>
-												<Text>Upload ID</Text>
-											</TouchableOpacity>
-										</View>
+										{selectedFile && (
+											<View style={styles.imagePreviewContainer}>
+												<Image
+													source={{ uri: selectedFile.uri }}
+													style={styles.previewImage}
+												/>
 
-										{/* Display form validation errors */}
+												<Text style={styles.selectedFileName}>
+													{selectedFile.fileName || "Image Selected"} (
+													{(selectedFile.fileSize / 1024).toFixed(2)} KB)
+												</Text>
+											</View>
+										)}
+
 										{errors.documentImage && touched.documentImage && (
 											<Text style={styles.error__message}>
 												{errors.documentImage}
@@ -372,6 +396,12 @@ const Kyc_User = () => {
 export default Kyc_User;
 
 const styles = StyleSheet.create({
+	loadingContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+
 	scrollContainer: {
 		flexGrow: 1,
 		justifyContent: "center",
@@ -572,5 +602,63 @@ const styles = StyleSheet.create({
 		color: "red",
 		fontSize: 12,
 		marginTop: 5,
+	},
+
+	imageUploadContainer: {
+		marginTop: 20,
+		marginBottom: 20,
+	},
+
+	label: {
+		fontSize: 16,
+		fontWeight: "bold",
+		color: "#555",
+		marginBottom: 5,
+		marginTop: 15,
+	},
+
+	imageSelectButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "#e0f7fa", // Light blue background
+		paddingVertical: 15,
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: "#007bff",
+		shadowColor: "#007bff",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.25,
+		shadowRadius: 3.84,
+		elevation: 5,
+	},
+
+	imageSelectButtonText: {
+		fontSize: 18,
+		color: "#007bff",
+		fontWeight: "bold",
+		marginLeft: 10,
+	},
+
+	imagePreviewContainer: {
+		marginTop: 15,
+		alignItems: "center",
+		borderWidth: 1,
+		borderColor: "#ccc",
+		borderRadius: 10,
+		padding: 10,
+		backgroundColor: "#f9f9f9",
+	},
+	previewImage: {
+		width: 150,
+		height: 150,
+		borderRadius: 5,
+		resizeMode: "contain",
+		marginBottom: 10,
+	},
+	selectedFileName: {
+		fontSize: 14,
+		color: "#555",
+		fontStyle: "italic",
 	},
 });
