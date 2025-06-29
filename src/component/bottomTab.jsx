@@ -36,7 +36,7 @@ const BottomTab = () => {
 
 					return <Ionicons name={iconName} size={size} color={color} />;
 				},
-				tabBarActiveTintColor: "tomato", // Active color for focused tab
+				tabBarActiveTintColor: "purple", // Active color for focused tab
 				tabBarInactiveTintColor: "gray", // Inactive color for unfocused tabs
 				tabBarStyle: { height: 60 }, // Custom tab height
 			})}
@@ -54,7 +54,7 @@ const BottomTab = () => {
 					tabBarLabel: "",
 					tabBarButton: (props) => (
 						<TouchableOpacity {...props} style={styles.middleTab}>
-							<Ionicons name="add-circle" size={40} color="tomato" />
+							<Ionicons name="add-circle" size={40} color="purple" />
 						</TouchableOpacity>
 					),
 				}}
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		borderWidth: 2,
-		borderColor: "tomato",
+		borderColor: "purple",
 		marginBottom: 20, // Raised effect for the middle button
 	},
 });

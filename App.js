@@ -29,48 +29,47 @@ const App = () => {
 			<Provider store={store}>
 				<NavigationContainer>
 					<Stack.Navigator initialRouteName="Splash">
-							<Stack.Screen
-								name="Splash"
-								component={SplashScreen}
-								options={{ headerShown: false }}
-							/>
-							<Stack.Screen
-								name="Welcome"
-								component={WelcomeScreen}
-								options={{ headerShown: false }}
-							/>
-							<Stack.Screen
-								name="SignUp"
-								component={SignUp}
-								options={{ headerShown: false }}
-							/>
-							<Stack.Screen
-								name="Login"
-								component={Login}
-								options={{ headerShown: false }}
-							/>
-							<Stack.Screen
-								name="Kyc_User"
-								component={Kyc_User}
-								options={{ headerShown: false }}
-							/>
-							<Stack.Screen
-								name="Verification"
-								component={SignUp2_EmailVerification}
-								options={{ headerShown: false }}
-							/>
-							<Stack.Screen
-								name="Password_reset"
-								component={ForgetPassword}
-								options={{ headerShown: true }}
-							/>
-							{/* Main Tabs */}
-							<Stack.Screen
-								name="MainTabs"
-								component={BottomTab}
-								options={{ headerShown: false }}
-							/>
-						 
+						<Stack.Screen
+							name="Splash"
+							component={SplashScreen}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen
+							name="Welcome"
+							component={WelcomeScreen}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen
+							name="SignUp"
+							component={SignUp}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen
+							name="Login"
+							component={Login}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen
+							name="Kyc_User"
+							component={Kyc_User}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen
+							name="Verification"
+							component={SignUp2_EmailVerification}
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen
+							name="Password_reset"
+							component={ForgetPassword}
+							options={{ headerShown: true }}
+						/>
+						{/* Main Tabs */}
+						<Stack.Screen
+							name="MainTabs"
+							component={BottomTab}
+							options={{ headerShown: false }}
+						/>
 					</Stack.Navigator>
 
 					<Toast />
@@ -83,7 +82,7 @@ const App = () => {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#fff", 
+		backgroundColor: "#fff",
 	},
 });
 

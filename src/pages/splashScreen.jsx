@@ -15,7 +15,7 @@ const SplashScreen = ({ navigation }) => {
 		// Wait and go to main welcome screen
 		setTimeout(() => {
 			navigation.replace("Welcome"); // Navigate to your main welcome screen
-		}, 1500);
+		}, 3000);
 	}, []);
 
 	return (
@@ -34,9 +34,9 @@ const SplashScreen = ({ navigation }) => {
 			<Animated.View
 				style={[styles.textWrapper, { opacity: 1 }]}
 				animation="fadeInRight"
-				duration={2000}
+				duration={3000}
 			>
-				{/* <Text style={styles.welcomeText}>Welcome to GuarantyBank</Text> */}
+				<Text style={styles.welcomeText}>Welcome to GuarantyBank</Text>
 			</Animated.View>
 		</View>
 	);
@@ -47,25 +47,19 @@ export default SplashScreen;
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		flexDirection: "column",
 		backgroundColor: "#fff",
 		justifyContent: "center",
 		alignItems: "center",
-	},
-	logoWrapper: {
-		position: "absolute",
-		left: 225, // Center
 	},
 	logo: {
 		width: 100,
 		height: 100,
 		resizeMode: "contain",
 	},
-	textWrapper: {
-		position: "absolute",
-		left: Dimensions.get("window").width / 2 + 30,
-	},
+	textWrapper: {},
 	welcomeText: {
-		fontSize: 20,
+		fontSize: 30,
 		fontWeight: "extrabold",
 		color: "purple",
 	},

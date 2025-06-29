@@ -9,6 +9,7 @@ import { logoutReducer } from "./reducer/logoutReducer";
 import { forgetPasswordReducer } from "./reducer/forgetPasswordReducer";
 import FetchUserReducer from "./reducer/fetchUserByIdReducer";
 import deleteUserReducer from "./reducer/deleteUserReducer";
+import { kycReducer } from "./reducer/kycUser.Reducer";
 
 const rootReducer = combineReducers({
 	registration: registrationReducer,
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
 	forgetPasswordReducer: forgetPasswordReducer,
 	userProfileFetch: FetchUserReducer,
 	deleteUserState: deleteUserReducer,
+	kyc: kycReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));

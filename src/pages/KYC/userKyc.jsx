@@ -14,6 +14,7 @@ import {
 	ScrollView,
 	KeyboardAvoidingView,
 	Platform,
+	ActivityIndicator,
 	Alert, // Using Alert for user feedback instead of console.log for "No file selected"
 } from "react-native";
 import GlobalPopupModal from "../../component/modalComponent";
@@ -21,7 +22,9 @@ import SpinningLoader from "../../component/spinner";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { KycValidationSchema } from "../../component/ErrorValidation";
 import GlobalSelect from "../../component/selectOptionDropdown";
-import { launchImageLibrary } from "react-native-image-picker";
+import * as ImagePicker from "expo-image-picker";
+import { requestStoragePermission } from "./../../utils/requestPermissions";
+import { updateKyc } from "./../../store/action/kycUser.Action";
 
 const initialValues = {
 	documentType: "",
@@ -38,9 +41,9 @@ const Kyc_User = () => {
 	const [termCondition, setTermCondition] = useState(false);
 	const dispatch = useDispatch();
 	const navigation = useNavigation();
-	const { loading, errorMsg } = useSelector((state) => state.registration);
-	const [documentType, setDocumentType] = useState("");
-	const [selectedFile, setSelectedFile] = useState(null);
+	const { loadingKyc, kycData, errorMsgKyc } = useSelector(
+		(state) => state.kyc
+	);
 
 	const documentOptions = [
 		"National ID",
@@ -49,34 +52,44 @@ const Kyc_User = () => {
 		"Passport",
 	];
 
-	const handleFileChange = () => {
-		launchImageLibrary({ mediaType: "photo" }, (response) => {
-			if (response.didCancel) {
-				console.log("User cancelled image picker");
-			} else if (response.errorCode) {
-				console.log("ImagePicker Error: ", response.errorMessage);
-			} else {
-				const selectedAsset = response.assets[0];
-				setSelectedFile(selectedAsset);
-				console.log("Selected image URI: ", selectedAsset.uri);
-			}
-		});
-	};
+	// Function to handle image selection and update Formik state
+	const pickImage = async (setFieldValue) => {
+		try {
+			const permissionResult =
+				await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-	const handleUpload = () => {
-		if (selectedFile) {
-			console.log("Uploading: ", selectedFile.name);
-			// Handle the upload logic here
-		} else {
-			console.log("No file selected");
+			if (!permissionResult.granted) {
+				Alert.alert(
+					"Permission Denied",
+					"Permission to access media library is required!"
+				);
+				return;
+			}
+
+			const result = await ImagePicker.launchImageLibraryAsync({
+				mediaTypes: ImagePicker.MediaTypeOptions.Images,
+				quality: 1,
+			});
+
+			if (!result.canceled) {
+				const asset = result.assets[0];
+				setFieldValue("documentImage", asset); // ⚠️ Store entire asset object
+				Alert.alert("Success", "Image selected successfully!");
+			} else {
+				Alert.alert("Cancelled", "Image selection was cancelled.");
+			}
+		} catch (error) {
+			console.error("Error picking image:", error);
+			Alert.alert("Error", "Failed to select image. Please try again.");
 		}
 	};
 
-	if (errorMsg) {
-		console.log("here error : " + errorMsg);
+	if (errorMsgKyc) {
+		console.log("here error : " + errorMsgKyc);
+		// You might want to display a GlobalPopupModal here for the errorMsgKyc
+		Alert.alert("Error", errorMsgKyc);
 	}
-
-	if (loading) {
+	if (loadingKyc) {
 		return (
 			<View style={styles.loadingContainer}>
 				<SpinningLoader />
@@ -91,26 +104,38 @@ const Kyc_User = () => {
 				validationSchema={KycValidationSchema}
 				onSubmit={async (values) => {
 					try {
-						// Add selectedDocumentImage to values if file selected
-						// if (selectedFile) {
-						// 	values.documentImage = selectedFile.uri;
-						// }
+						// Validate that image is selected
+						if (!values.documentImage || !values.documentImage.uri) {
+							Alert.alert(
+								"Error",
+								"Please select a document image to proceed."
+							);
+							return;
+						}
 
-						// await dispatch(register(values));
-
+						// Create FormData for file upload
 						const formData = new FormData();
-						formData.append("documentType", values.documentType);
-						formData.append("documentImage", {
-							uri: values.documentImage,
-							name: selectedFile.fileName,
-							type: selectedFile.type,
-						});
+						for (const key in values) {
+							if (key === "documentImage") {
+								formData.append("documentImage", {
+									uri: values.documentImage.uri,
+									name: values.documentImage.fileName || "kyc.jpg",
+									type: values.documentImage.type || "image/jpeg",
+								});
+							} else {
+								formData.append(key, values[key]);
+							}
+						}
 
-						dispatch(register(formData));
-
+						// Dispatch your API call action
+						await dispatch(updateKyc(formData)); // You’ll define `updateKyc` next
 						navigation.navigate("Verification");
 					} catch (error) {
 						console.error("Registration error: ", error);
+						Alert.alert(
+							"Submission Error",
+							"Failed to submit KYC. Please try again."
+						);
 					}
 				}}
 			>
@@ -121,263 +146,250 @@ const Kyc_User = () => {
 					handleSubmit,
 					errors,
 					touched,
-				}) => (
-					<KeyboardAvoidingView
-						style={{ flex: 1 }}
-						behavior={Platform.OS === "ios" ? "padding" : "height"}
-					>
-						<ScrollView contentContainerStyle={styles.scrollContainer}>
-							<View style={styles.login__wrapper}>
-								<View style={{ width: "100%" }}>
-									<View style={styles.login__logo_wrapper}>
-										<Image
-											source={require("../../asset/newlogo.png")}
-											style={styles.logo__login}
-										/>
-									</View>
-								</View>
-								<View style={styles.login_body_info_wrapper}>
-									<Text
-										style={{
-											textAlign: "center",
-											fontSize: 20,
-											fontWeight: 500,
-											marginBottom: 20,
-										}}
-									>
-										<Text style={{ color: "purple" }}> GuarantyBest</Text>!!
-										{"\n"}
-										We guaranty you the best{" "}
-									</Text>
-									<View>
-										<Text style={styles.login_email_text}>Address</Text>
-										<View>
-											<TextInput
-												style={[
-													styles.Email_input,
-													errors?.address ? styles.error__border : null,
-												]}
-												placeholder="Enter address"
-												value={values.address}
-												onChangeText={handleChange("address")}
-												onBlur={handleBlur("address")}
-											/>
-											{errors.address && (
-												<Text style={styles.error__message}>
-													{errors.address}
-												</Text>
-											)}
-										</View>
-									</View>
-									<View>
-										<Text style={styles.login_email_text}>Date of Birth</Text>
-										<View>
-											<TextInput
-												style={[
-													styles.Email_input,
-													errors?.dateOfBirth ? styles.error__border : null,
-												]}
-												placeholder="Enter DOB"
-												value={values.dateOfBirth}
-												onChangeText={handleChange("dateOfBirth")}
-												onBlur={handleBlur("dateOfBirth")}
-											/>
-											{errors.dateOfBirth && (
-												<Text style={styles.error__message}>
-													{errors.dateOfBirth}
-												</Text>
-											)}
-										</View>
-									</View>
-									<View>
-										<Text style={styles.login_email_text}>Occupation</Text>
-										<View>
-											<TextInput
-												style={[
-													styles.Email_input,
-													errors?.occupation ? styles.error__border : null,
-												]}
-												placeholder="Enter Occupation"
-												value={values.occupation}
-												onChangeText={handleChange("occupation")}
-												onBlur={handleBlur("occupation")}
-											/>
-											{errors.occupation && (
-												<Text style={styles.error__message}>
-													{errors.occupation}
-												</Text>
-											)}
-										</View>
-									</View>
-									<View>
-										<Text style={styles.login_email_text}>Place of Work</Text>
-										<View>
-											<TextInput
-												style={[
-													styles.Email_input,
-													errors?.placeOfWork ? styles.error__border : null,
-												]}
-												placeholder="Enter Place of Work"
-												value={values.placeOfWork}
-												onChangeText={handleChange("placeOfWork")}
-												onBlur={handleBlur("placeOfWork")}
-											/>
-											{errors.placeOfWork && (
-												<Text style={styles.error__message}>
-													{errors.placeOfWork}
-												</Text>
-											)}
-										</View>
-									</View>
-									<View>
-										<Text style={styles.login_email_text}>BVN</Text>
-										<View>
-											<TextInput
-												style={[
-													styles.Email_input,
-													errors?.bvn ? styles.error__border : null,
-												]}
-												placeholder="Enter BVN"
-												value={values.bvn}
-												onChangeText={handleChange("bvn")}
-												onBlur={handleBlur("bvn")}
-											/>
-											{errors.bvn && (
-												<Text style={styles.error__message}>{errors.bvn}</Text>
-											)}
-										</View>
-									</View>
-									<View>
-										<Text style={styles.login_email_text}>Phone Number</Text>
-										<View>
-											<TextInput
-												style={[
-													styles.Email_input,
-													errors?.phoneNumber ? styles.error__border : null,
-												]}
-												placeholder="Enter phone number"
-												value={values.phoneNumber}
-												onChangeText={handleChange("phoneNumber")}
-												onBlur={handleBlur("phoneNumber")}
-											/>
-											{errors.phoneNumber && (
-												<Text style={styles.error__message}>
-													{errors.phoneNumber}
-												</Text>
-											)}
-										</View>
-									</View>
+					setFieldValue,
+				}) => {
+					// filling all field checked for button submission disable
+					const allFieldsFilled =
+						values.address &&
+						values.bvn &&
+						values.dateOfBirth &&
+						values.documentImage?.uri && // we stored full object now
+						values.documentType &&
+						values.occupation &&
+						values.phoneNumber &&
+						values.placeOfWork;
 
-									{/* Replace Picker with DropDownPicker */}
-									<View>
-										<Text style={styles.login_email_text}>ID Card Type</Text>
-										<GlobalSelect
-											options={documentOptions}
-											selectedValue={documentType}
-											onValueChange={(value) => setDocumentType(value)}
-											placeholder="Select ID Type"
-											style={[
-												styles.picker,
-												errors?.documentType ? styles.error__border : null,
-											]}
-										/>
-
-										{errors.documentType && touched.documentType && (
-											<Text style={styles.error__message}>
-												{errors.documentType}
-											</Text>
-										)}
+					const hasErrors = Object.keys(errors).length > 0;
+					return (
+						<KeyboardAvoidingView
+							style={{ flex: 1 }}
+							behavior={Platform.OS === "ios" ? "padding" : "height"}
+						>
+							<ScrollView contentContainerStyle={styles.scrollContainer}>
+								<View style={styles.login__wrapper}>
+									<View style={{ width: "100%" }}>
+										<View style={styles.login__logo_wrapper}>
+											<Image
+												source={require("../../asset/newlogo.png")}
+												style={styles.logo__login}
+											/>
+										</View>
 									</View>
-
-									{/* Document Image Upload */}
-									<View style={styles.imageUploadContainer}>
-										<Text style={styles.label}>Upload ID Image</Text>
-										<TouchableOpacity
-											onPress={() => handleUpload()} // Pass setFieldValue to access Formik's state
-											style={styles.imageSelectButton}
+									<View style={styles.login_body_info_wrapper}>
+										<Text
+											style={{
+												textAlign: "center",
+												fontSize: 20,
+												fontWeight: 500,
+												marginBottom: 20,
+											}}
 										>
-											<Icon name="image" size={24} color="#007bff" />
-											<Text style={styles.imageSelectButtonText}>
-												Select Image
-											</Text>
-										</TouchableOpacity>
-
-										{selectedFile && (
-											<View style={styles.imagePreviewContainer}>
-												<Image
-													source={{ uri: selectedFile.uri }}
-													style={styles.previewImage}
-												/>
-
-												<Text style={styles.selectedFileName}>
-													{selectedFile.fileName || "Image Selected"} (
-													{(selectedFile.fileSize / 1024).toFixed(2)} KB)
-												</Text>
-											</View>
-										)}
-
-										{errors.documentImage && touched.documentImage && (
-											<Text style={styles.error__message}>
-												{errors.documentImage}
-											</Text>
-										)}
-									</View>
-
-									{!values.address &&
-									!values.bvn &&
-									!values.dateOfBirth &&
-									!values.documentImage &&
-									!values.documentType &&
-									!values.occupation &&
-									!values.phoneNumber &&
-									!values.placeOfWork ? (
+											<Text style={{ color: "purple" }}> GuarantyBest</Text>!!
+											{"\n"}
+											We guaranty you the best{" "}
+										</Text>
 										<View>
-											<TouchableOpacity
-												style={styles.login__btn}
-												onPress={() => {
-													console.log("please Create an account");
-												}}
-											>
-												<Text style={styles.login__text_btn}>Create KYC</Text>
-											</TouchableOpacity>
+											<Text style={styles.login_email_text}>Address</Text>
+											<View>
+												<TextInput
+													style={[
+														styles.Email_input,
+														errors?.address ? styles.error__border : null,
+													]}
+													placeholder="Enter address"
+													value={values.address}
+													onChangeText={handleChange("address")}
+													onBlur={handleBlur("address")}
+												/>
+												{errors.address && (
+													<Text style={styles.error__message}>
+														{errors.address}
+													</Text>
+												)}
+											</View>
 										</View>
-									) : (
+										<View>
+											<Text style={styles.login_email_text}>Date of Birth</Text>
+											<View>
+												<TextInput
+													style={[
+														styles.Email_input,
+														errors?.dateOfBirth ? styles.error__border : null,
+													]}
+													placeholder="Enter DOB"
+													value={values.dateOfBirth}
+													onChangeText={handleChange("dateOfBirth")}
+													onBlur={handleBlur("dateOfBirth")}
+												/>
+												{errors.dateOfBirth && (
+													<Text style={styles.error__message}>
+														{errors.dateOfBirth}
+													</Text>
+												)}
+											</View>
+										</View>
+										<View>
+											<Text style={styles.login_email_text}>Occupation</Text>
+											<View>
+												<TextInput
+													style={[
+														styles.Email_input,
+														errors?.occupation ? styles.error__border : null,
+													]}
+													placeholder="Enter Occupation"
+													value={values.occupation}
+													onChangeText={handleChange("occupation")}
+													onBlur={handleBlur("occupation")}
+												/>
+												{errors.occupation && (
+													<Text style={styles.error__message}>
+														{errors.occupation}
+													</Text>
+												)}
+											</View>
+										</View>
+										<View>
+											<Text style={styles.login_email_text}>Place of Work</Text>
+											<View>
+												<TextInput
+													style={[
+														styles.Email_input,
+														errors?.placeOfWork ? styles.error__border : null,
+													]}
+													placeholder="Enter Place of Work"
+													value={values.placeOfWork}
+													onChangeText={handleChange("placeOfWork")}
+													onBlur={handleBlur("placeOfWork")}
+												/>
+												{errors.placeOfWork && (
+													<Text style={styles.error__message}>
+														{errors.placeOfWork}
+													</Text>
+												)}
+											</View>
+										</View>
+										<View>
+											<Text style={styles.login_email_text}>BVN</Text>
+											<View>
+												<TextInput
+													style={[
+														styles.Email_input,
+														errors?.bvn ? styles.error__border : null,
+													]}
+													placeholder="Enter BVN"
+													value={values.bvn}
+													onChangeText={handleChange("bvn")}
+													onBlur={handleBlur("bvn")}
+												/>
+												{errors.bvn && (
+													<Text style={styles.error__message}>
+														{errors.bvn}
+													</Text>
+												)}
+											</View>
+										</View>
+										<View>
+											<Text style={styles.login_email_text}>Phone Number</Text>
+											<View>
+												<TextInput
+													style={[
+														styles.Email_input,
+														errors?.phoneNumber ? styles.error__border : null,
+													]}
+													placeholder="Enter phone number"
+													value={values.phoneNumber}
+													onChangeText={handleChange("phoneNumber")}
+													onBlur={handleBlur("phoneNumber")}
+												/>
+												{errors.phoneNumber && (
+													<Text style={styles.error__message}>
+														{errors.phoneNumber}
+													</Text>
+												)}
+											</View>
+										</View>
+
+										{/* Replace Picker with DropDownPicker */}
+										<View>
+											<Text style={styles.login_email_text}>ID Card Type</Text>
+
+											<GlobalSelect
+												options={documentOptions}
+												selectedValue={values.documentType}
+												onValueChange={(value) =>
+													setFieldValue("documentType", value)
+												}
+												placeholder="Select ID Type"
+											/>
+
+											{errors.documentType && touched.documentType && (
+												<Text style={styles.error__message}>
+													{errors.documentType}
+												</Text>
+											)}
+										</View>
+
+										{/* Document Image Upload */}
+										<View style={styles.imageUploadContainer}>
+											<Text style={styles.label}>Upload ID Image</Text>
+											<TouchableOpacity
+												// onPress={() => handleUpload()} // Pass setFieldValue to access Formik's state
+												onPress={() => pickImage(setFieldValue)} // Pass setFieldValue to access Formik's state
+												style={styles.imageSelectButton}
+											>
+												<Icon name="image" size={24} color="purple" />
+												<Text style={styles.imageSelectButtonText}>
+													Select Image
+												</Text>
+											</TouchableOpacity>
+
+											{values.documentImage && values.documentImage.uri && (
+												<View style={styles.imagePreviewContainer}>
+													<Image
+														source={{ uri: values.documentImage.uri }}
+														style={styles.previewImage}
+													/>
+													<Text style={styles.selectedFileName}>
+														{values.documentImage.fileName || "Image Selected"}{" "}
+														({(values.documentImage.fileSize / 1024).toFixed(2)}{" "}
+														KB)
+													</Text>
+												</View>
+											)}
+
+											{errors.documentImage && touched.documentImage && (
+												<Text style={styles.error__message}>
+													{errors.documentImage}
+												</Text>
+											)}
+										</View>
+
 										<View>
 											<TouchableOpacity
 												style={[
 													styles.login__btn,
-													!errors.documentImage &&
-													!errors.address &&
-													!errors.bvn &&
-													!errors.dateOfBirth &&
-													!errors.documentType &&
-													!errors.occupation &&
-													!errors.phoneNumber &&
-													!errors.placeOfWork
+													allFieldsFilled && !hasErrors
 														? styles.submitButtonActive
 														: styles.submitButtonDisabled,
 												]}
 												onPress={handleSubmit}
-												disabled={
-													!errors.documentImage ||
-													!errors.address ||
-													!errors.bvn ||
-													!errors.dateOfBirth ||
-													!errors.documentType ||
-													!errors.occupation ||
-													!errors.phoneNumber ||
-													!errors.placeOfWork
-												}
+												disabled={!allFieldsFilled || hasErrors}
 											>
-												<Text style={styles.login__text_btn}>Submit KYC</Text>
+												<Text style={styles.login__text_btn}>
+													{loadingKyc ? (
+														<ActivityIndicator size="large" color="#fff" />
+													) : (
+														"Submit KYC"
+													)}
+												</Text>
 											</TouchableOpacity>
 										</View>
-									)}
+									</View>
 								</View>
-							</View>
-						</ScrollView>
-					</KeyboardAvoidingView>
-				)}
+							</ScrollView>
+						</KeyboardAvoidingView>
+					);
+				}}
 			</Formik>
 
 			{termCondition && (
@@ -421,7 +433,7 @@ const styles = StyleSheet.create({
 		justifyContent: "flex-end",
 		alignSelf: "flex-end",
 		marginRight: 5,
-		marginTop: 20,
+		marginTop: 40,
 	},
 
 	logo__login: {
@@ -625,7 +637,7 @@ const styles = StyleSheet.create({
 		paddingVertical: 15,
 		borderRadius: 10,
 		borderWidth: 1,
-		borderColor: "#007bff",
+		borderColor: "purple",
 		shadowColor: "#007bff",
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.25,
@@ -635,7 +647,7 @@ const styles = StyleSheet.create({
 
 	imageSelectButtonText: {
 		fontSize: 18,
-		color: "#007bff",
+		color: "purple",
 		fontWeight: "bold",
 		marginLeft: 10,
 	},
