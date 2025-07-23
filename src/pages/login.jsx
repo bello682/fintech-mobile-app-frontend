@@ -63,7 +63,7 @@ const Login = () => {
 
 						navigation.navigate("MainTabs");
 					} catch (error) {
-						console.error("Registration error: ", error);
+						console.error("Login error: ", error);
 					}
 				}}
 			>

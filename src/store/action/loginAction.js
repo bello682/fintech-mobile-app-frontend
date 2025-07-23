@@ -11,9 +11,18 @@ export const loginUser = (credentials, navigation) => async (dispatch) => {
 	try {
 		dispatch({ type: actionTypes.LOGIN_REQUEST });
 
+		// const res = await fetch(
 		const res = await axios.post(
 			`${process.env.EXPO_PUBLIC_MOBILE_APP_BASE_URL}/FintechUsers/login`,
 			credentials
+
+			// {
+			// 	method: "POST",
+			// 	headers: {
+			// 		"Content-Type": "application/json",
+			// 	},
+			// 	body: JSON.stringify({ credentials }),
+			// }
 		);
 
 		const userData = res.data;
@@ -21,6 +30,15 @@ export const loginUser = (credentials, navigation) => async (dispatch) => {
 		// Save JWT to AsyncStorage
 		const jwtToken = userData.token; // Assuming the JWT token is returned as "token"
 		await AsyncStorage.setItem("jwtToken", jwtToken);
+
+		const userId = userData?.user?.id;
+		console.log("login user ID from the login Action API", userId);
+
+		if (userId) {
+			await AsyncStorage.setItem("userId", userId);
+		} else {
+			throw new Error("No ID received during registration");
+		}
 
 		dispatch({
 			type: actionTypes.LOGIN_SUCCESS,
@@ -39,8 +57,7 @@ export const loginUser = (credentials, navigation) => async (dispatch) => {
 		return res;
 	} catch (err) {
 		const errorMessage =
-			err.response?.data?.message ||
-			`Network Error. Please check your connection and try again. ${err.message}`;
+			err.response?.data?.message || `Network Error. ${err.message}`;
 
 		dispatch({
 			type: actionTypes.LOGIN_FAILURE,

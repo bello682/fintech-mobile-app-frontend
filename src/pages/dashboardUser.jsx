@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 import {
 	StyleSheet,
@@ -6,11 +6,15 @@ import {
 	View,
 	ScrollView,
 	ActivityIndicator,
+	Dimensions, // Import Dimensions to get screen width for animation
 } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 import { useDispatch, useSelector } from "react-redux";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getGreeting } from "../component/getGreetings";
 import { fetchUserById } from "../store/action/fetchUserByIdAction";
+
+const { width } = Dimensions.get("window");
 
 const DashboardUser = () => {
 	const dispatch = useDispatch();
@@ -18,6 +22,11 @@ const DashboardUser = () => {
 	const { profile, loading, error } = useSelector(
 		(state) => state.userProfileFetch
 	);
+
+	// State for showing/hiding balance
+	const [showBalance, setShowBalance] = useState(false);
+	const [kycStatus, setShowKycStatus] = useState(false);
+
 	const { user } = useSelector((state) => state.loginState);
 
 	const userID = user?.user?.id;
@@ -27,20 +36,33 @@ const DashboardUser = () => {
 
 	useEffect(() => {
 		if (userID) {
-			// Fetch user profile by userID
 			dispatch(fetchUserById(userID));
-		} else {
-			console.log("Invalid or undefined userID: ", userID);
 		}
-	}, [dispatch, userID]);
+
+		if (!profile?.kyc) {
+			setShowKycStatus(true);
+		}
+
+		console.log(profile?.kyc);
+	}, [dispatch, userID, kycStatus]);
 
 	if (loading) {
-		return <ActivityIndicator size="large" color="purple" />;
+		return (
+			<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+				<ActivityIndicator size="large" color="purple" />
+			</View>
+		);
 	}
 
 	if (error) {
 		return <Text>Error: {error}</Text>;
 	}
+
+	// Dummy balance for demonstration. Replace with actual profile balance.
+	const userBalance = profile?.data?.balance
+		? `$${profile.data.balance.toFixed(2)}`
+		: "$0.00";
+	// const kycStatus = profile?.data?.kycVerified === false; // Assuming a kycVerified field in profile data
 
 	return (
 		<>
@@ -55,10 +77,41 @@ const DashboardUser = () => {
 					</View>
 				</View>
 
+				{/* KYC Warning Banner - Only show if KYC is not verified */}
+				{kycStatus && (
+					<View style={styles.warningBannerContainer}>
+						<View style={styles.movingTextWrapper}>
+							<Text style={[styles.movingText]}>
+								Please update your KYC to access all features
+							</Text>
+						</View>
+						<TouchableOpacity
+							style={styles.kycButton}
+							onPress={() => navigation.navigate("Kyc_User")} // Navigate to your KYC page
+						>
+							<Text style={styles.kycButtonText}>Update KYC</Text>
+						</TouchableOpacity>
+					</View>
+				)}
+
 				{/* Balance Section */}
 				<View style={styles.balanceSection}>
-					<Text style={styles.balanceTitle}>Current Balance</Text>
-					<Text style={styles.balanceAmount}>$12,345.67</Text>
+					<View style={styles.balanceHeaderContainer}>
+						<Text style={styles.balanceTitle}>Current Balance</Text>
+						<TouchableOpacity
+							onPress={() => setShowBalance(!showBalance)}
+							style={styles.toggleBalanceButton}
+						>
+							<Icon
+								name={showBalance ? "eye" : "eye-slash"} // FontAwesome eye icons
+								size={24}
+								color="#fff"
+							/>
+						</TouchableOpacity>
+					</View>
+					<Text style={styles.balanceAmount}>
+						{showBalance ? userBalance : "********"}
+					</Text>
 					<TouchableOpacity style={styles.actionButton}>
 						<Text style={styles.buttonText}>Deposit Funds</Text>
 					</TouchableOpacity>
@@ -140,22 +193,95 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: "purple",
 	},
+	// KYC Warning Banner Styles
+	warningBannerContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#fff3cd",
+		borderColor: "#ffeeba",
+		borderWidth: 1,
+		borderRadius: 8,
+		paddingVertical: 10,
+		paddingHorizontal: 15,
+		marginBottom: 20,
+		overflow: "hidden",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 3,
+		elevation: 4,
+	},
+
+	movingTextWrapper: {
+		flex: 1, // Allows the text to take available space
+		overflow: "hidden", // Ensures text is clipped at the wrapper boundaries
+		height: 30, // Fixed height for the moving text line
+		justifyContent: "center",
+		paddingVertical: 5,
+		alignItems: "flex-start", // ✅ Ensures text starts at left
+		// width: "100%",
+	},
+
+	movingText: {
+		fontSize: 14,
+		color: "#856404",
+		fontWeight: "500",
+		width: width * 3, // Make it longer so it scrolls visibly
+	},
+
+	kycButton: {
+		marginLeft: 15, // Space between text and button
+		backgroundColor: "purple",
+		paddingVertical: 8,
+		paddingHorizontal: 15,
+		borderRadius: 20,
+		// No animation on this button, it's fixed
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.2,
+		shadowRadius: 2,
+		elevation: 3,
+	},
+	kycButtonText: {
+		color: "#fff",
+		fontSize: 14,
+		fontWeight: "bold",
+	},
+
+	// Balance Section Styles
 	balanceSection: {
 		backgroundColor: "purple",
 		padding: 20,
 		borderRadius: 12,
 		marginBottom: 20,
 		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 5,
+		elevation: 8,
+	},
+	balanceHeaderContainer: {
+		// New container for title and toggle button
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center", // Center content horizontally
+		marginBottom: 10,
+		width: "100%", // Take full width of parent
 	},
 	balanceTitle: {
 		fontSize: 18,
 		color: "#fff",
-		marginBottom: 10,
+		marginRight: 10, // Space between title and icon
+	},
+	toggleBalanceButton: {
+		padding: 5, // Make the touch target larger
 	},
 	balanceAmount: {
 		fontSize: 36,
 		fontWeight: "bold",
 		color: "#fff",
+		letterSpacing: 1.5, // Add some spacing for hidden balance
 	},
 	actionButton: {
 		marginTop: 20,

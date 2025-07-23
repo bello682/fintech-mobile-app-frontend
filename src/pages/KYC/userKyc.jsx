@@ -129,9 +129,10 @@ const Kyc_User = () => {
 
 						// Dispatch your API call action
 						await dispatch(updateKyc(formData)); // You’ll define `updateKyc` next
+						// await dispatch(updateKyc(formData, userId));
 						navigation.navigate("Verification");
 					} catch (error) {
-						console.error("Registration error: ", error);
+						console.error("KYC UPDATE error: ", error);
 						Alert.alert(
 							"Submission Error",
 							"Failed to submit KYC. Please try again."
